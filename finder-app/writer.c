@@ -9,6 +9,10 @@ int main(int argc, char* argv[]) {
 	syslog(LOG_ERR, "Invalid number of arguements : %d", argc);
 	return 1;
     }else{
+	if(argc == 1){	
+	    syslog(LOG_ERR, "Invalid number of arguements : %d", argc);
+	    return 1;
+	}
         fp = fopen(argv[1], "w");
 	if(fp == NULL){
 	    printf("File Doesn't exist\n"); 
