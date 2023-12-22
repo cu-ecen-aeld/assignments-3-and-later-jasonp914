@@ -10,6 +10,13 @@
 bool do_system(const char *cmd)
 {
 
+    int sys_bool = system(cmd);
+
+    if(sys_bool == 0){
+	return true;
+    }else{
+	return false;
+    }
 /*
  * TODO  add your code here
  *  Call the system() function with the command set in the cmd
@@ -17,7 +24,6 @@ bool do_system(const char *cmd)
  *   or false() if it returned a failure
 */
 
-    return true;
 }
 
 /**
@@ -45,9 +51,10 @@ bool do_exec(int count, ...)
         command[i] = va_arg(args, char *);
     }
     command[count] = NULL;
+    va_end(args);
     // this line is to avoid a compile warning before your implementation is complete
     // and may be removed
-    command[count] = command[count];
+    //command[count] = command[count];
 
 /*
  * TODO:
@@ -59,9 +66,32 @@ bool do_exec(int count, ...)
  *
 */
 
-    va_end(args);
+    int pid;
+    int status;
+    pid = fork();
 
-    return true;
+    if (pid == -1){
+	return false;
+    }else if (pid == 0) {
+	// Fork returns 0 to child
+        execv(command[0], &command[0]);
+        exit(-1);
+    }	    
+
+    if (waitpid(pid, &status, 0) == -1){
+	return false;
+    }else if (WIFEXITED(status)) {
+	if (WEXITSTATUS(status) == 0){
+	    return true; 
+	}else{
+	    return false;
+	}
+    }
+
+
+    return false;
+
+
 }
 
 /**
@@ -80,6 +110,7 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
         command[i] = va_arg(args, char *);
     }
     command[count] = NULL;
+    va_end(args);
     // this line is to avoid a compile warning before your implementation is complete
     // and may be removed
     command[count] = command[count];
@@ -93,7 +124,36 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
  *
 */
 
-    va_end(args);
+    int fd = open(outputfile, O_WRONLY|O_TRUNC|O_CREAT, 0644);
+    if (fd < 0) { 
+	perror("open"); 
+	abort(); 
+    } 
 
-    return true;
+    int pid;
+    int status;
+    pid = fork();
+
+    if (pid == -1){
+	return false;
+    }else if (pid == 0) {
+	// Fork returns 0 to child
+	if (dup2(fd, 1) < 0){perror("dup2"); abort();}
+        execv(command[0], &command[0]);
+        exit(-1);
+    }	    
+
+    if (waitpid(pid, &status, 0) == -1){
+	return false;
+    }else if (WIFEXITED(status)) {
+	if (WEXITSTATUS(status) == 0){
+	    return true; 
+	}else{
+	    return false;
+	}
+    }
+
+
+    return false;
+   
 }
