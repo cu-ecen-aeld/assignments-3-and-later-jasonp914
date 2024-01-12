@@ -205,6 +205,20 @@ int main(int argc, char *argv[]){
 	return -1;
     }
     
+    if(argc == 2){
+	printf("%s\n", argv[1]);
+	pid_t pid = fork();
+
+	if(pid == 0){
+	    // Child process
+	}else{
+  	    exit(0);
+            setsid();
+            chdir("/");
+	}
+
+
+    }
     // Listen for and accept a connection
     if ((listen(sockfd, MAXPENDINGQUEUE)) != 0) {
         printf("socket listen failed\n");
